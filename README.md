@@ -37,14 +37,14 @@ Everything is packaged as projectComputing.MessageQueue.  Here's what each sourc
 	
 	A message queue consists of an in-memory queue and files on disk.  Each message received  is always appended to the currently-open MessageQueueFile.  The in-memory message queue can be in one of two modes:
 
-	1. Containing messages re-read from disk.  This happens once the in-memory queue has been filled to capacity: new messages will only be written to disk (not to memory) until the entire backlog of messages written to disk has been consumed by a sink.
-	2. Containing messages written to memory (as well as being written to disk) as they are received.
+        1. Containing messages re-read from disk.  This happens once the in-memory queue has been filled to capacity: new messages will only be written to disk (not to memory) until the entire backlog of messages written to disk has been consumed by a sink.
+        2. Containing messages written to memory (as well as being written to disk) as they are received.
 
-	The names of the disk files containing persisted messages allow processing those files in the sequence in which they were generated.
+ The names of the disk files containing persisted messages allow processing those files in the sequence in which they were generated.
 
-	Disk files are deleted when the last message they contain is acked by a sink.
+  Disk files are deleted when the last message they contain is acked by a sink.
 
-	The approximate memory to be used by the in-memory queue is configurable, as is the approximate size of each disk file.  It is suggested that the disk file size should be much smaller than the memory-queue size: on restart and when processing a backlog of messages, entire files are read into memory, not just part of a file.  Smaller disk files also reduce the number of messages that may be replayed to the sink following a restart of the message queue.
+ The approximate memory to be used by the in-memory queue is configurable, as is the approximate size of each disk file.  It is suggested that the disk file size should be much smaller than the memory-queue size: on restart and when processing a backlog of messages, entire files are read into memory, not just part of a file.  Smaller disk files also reduce the number of messages that may be replayed to the sink following a restart of the message queue.
 
 * MessageQueueWriter.java: the class that message queue sources should use to send messages to a message queue.
 
