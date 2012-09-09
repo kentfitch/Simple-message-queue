@@ -25,6 +25,8 @@ public class MessageQueue {
 
 	static final int APPROX_PER_MESSAGE_MEMORY_OVERHEAD = 200 ; 	// approx java object overhead..
 
+	static final int MINIMUM_RECORDS_PER_FILE = 100 ;	// dont close/delete current file when last message is taken unless we've written this number of records to the file.  A small number reduces replay-on-startup, but increases overheads.
+
 	static public boolean DEBUG = true ; 							// extra system.err logging
 	/** Message sources connect to this port.  Overrideable by system property -DmessageQueueSourcePort **/
 	public int portUsedBySources ;
@@ -190,9 +192,12 @@ public class MessageQueue {
 				if (writingNewMessagesToMemory)	{ // we were writing to disk and to memory
 
 					// So there's nothing on disk to send, but everything in the current file HAS been sent, so
-					// the current file can be deleted
+					// the current file can be deleted.  But it is likely that this last message was the
+					// only record in the file, and we don't really want to keep opening and closing/deleting files
+					// just because the sink is "keeping up".  So, only close and delete if we've written at least
+					// MINIMUM_RECORDS_PER_FILE
 
-					if (currentMessageQueueFile != null) {
+					if ((currentMessageQueueFile != null) && (currentMessageQueueFile.in >=  MINIMUM_RECORDS_PER_FILE)) {
 						currentMessageQueueFile.closeAndDelete() ;
 						currentMessageQueueFile = null ;
 					}
