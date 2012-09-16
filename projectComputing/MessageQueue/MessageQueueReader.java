@@ -33,7 +33,7 @@ public class MessageQueueReader {
 	final BufferedInputStream bis ;
 	final BufferedOutputStream bos ;
 	final ByteBuffer lenBuffer ;
-	int count = 0 ;
+	public int count = 0 ;
 
 	public MessageQueueReader(String serverAddr, int serverSinkPort) throws Exception {
 

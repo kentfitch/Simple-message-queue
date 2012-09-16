@@ -9,9 +9,9 @@ import java.math.*;
 
 public class ReceivedMessageQueueMessage {
 
-	final byte id[] ;
-	final byte contents[] ;
-	final boolean possiblyReplayed ;
+	public final byte id[] ;
+	public final byte contents[] ;
+	public final boolean possiblyReplayed ;
 
 	ReceivedMessageQueueMessage(byte id[], byte contents[], boolean possiblyReplayed) {
 
@@ -20,12 +20,12 @@ public class ReceivedMessageQueueMessage {
 		this.possiblyReplayed = possiblyReplayed ;
 	}
 
-	String idAsString() {
+	public String idAsString() {
 
 		return new BigInteger(1, id).toString(16) ;
 	}
 
-	String contentsAsString() {
+	public String contentsAsString() {
 
 		return new String(contents) ;
 	}
