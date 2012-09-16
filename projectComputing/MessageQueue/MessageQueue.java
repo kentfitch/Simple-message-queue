@@ -25,7 +25,7 @@ public class MessageQueue {
 
 	static final int APPROX_PER_MESSAGE_MEMORY_OVERHEAD = 200 ; 	// approx java object overhead..
 
-	static final int MINIMUM_RECORDS_PER_FILE = 100 ;	// dont close/delete current file when last message is taken unless we've written this number of records to the file.  A small number reduces replay-on-startup, but increases overheads.
+	static final int MINIMUM_RECORDS_PER_FILE = 100 ;	// dont close/delete current file when last message is taken unless we've written this number of records to the file.  A small number reduces replay-on-startup, but increases overheads.  Overrideable by system property -DminimumRecordsPerFile
 
 	static public boolean DEBUG = true ; 							// extra system.err logging
 	/** Message sources connect to this port.  Overrideable by system property -DmessageQueueSourcePort **/
@@ -36,6 +36,9 @@ public class MessageQueue {
 
 	/** Very approximate max size in bytes of in memory message queue.  Overrideable by system property -DmaxMemoryQueueSize **/
 	public int maxMemoryQueueSize ;
+
+	/** Dont close a persisted file, even when memory queue is exhausted, unless this number of records has been written to it **/
+	public int minimumRecordsPerFile ; 
 
 	/** Number to divide into maxMemoryQueueSize to give approx max disk file size; eg, 4 makes disk file 1 quarter the size. 
 	    Overrideable by system property -DdiskFileSizeDivisor.
@@ -54,7 +57,8 @@ public class MessageQueue {
 	File messageQueueDirectory ;
 	MessageQueueFile currentMessageQueueFile ;
 	int maxDiskFileSize ; 			// derived from maxMemoryQueueSize and diskFileSizeDivisor
-	
+
+
 	boolean writingNewMessagesToMemory = true ;	// when false, we're not adding new messages to memory
 	
 	int in = 0 ;
@@ -73,6 +77,7 @@ public class MessageQueue {
 		maxMemoryQueueSize = SetFromSystemProperty("maxMemoryQueueSize", DEFAULT_MAX_MEMORY_QUEUE_SIZE) ;
 		diskFileSizeDivisor = SetFromSystemProperty("diskFileSizeDivisor", DEFAULT_DISK_FILE_SIZE_DIVISOR) ;
 		messageQueueDirectoryName = SetFromSystemProperty("messageQueueDirectoryName", DEFAULT_DIRECTORY_NAME) ;
+		minimumRecordsPerFile = SetFromSystemProperty("minimumRecordsPerFile", MINIMUM_RECORDS_PER_FILE) ;
 	}
 
 	public void begin() throws Exception {
@@ -195,9 +200,9 @@ public class MessageQueue {
 					// the current file can be deleted.  But it is likely that this last message was the
 					// only record in the file, and we don't really want to keep opening and closing/deleting files
 					// just because the sink is "keeping up".  So, only close and delete if we've written at least
-					// MINIMUM_RECORDS_PER_FILE
+					// minimumRecordsPerFile (defaults to MINIMUM_RECORDS_PER_FILE)
 
-					if ((currentMessageQueueFile != null) && (currentMessageQueueFile.in >=  MINIMUM_RECORDS_PER_FILE)) {
+					if ((currentMessageQueueFile != null) && (currentMessageQueueFile.in >=  minimumRecordsPerFile)) {
 						currentMessageQueueFile.closeAndDelete() ;
 						currentMessageQueueFile = null ;
 					}
